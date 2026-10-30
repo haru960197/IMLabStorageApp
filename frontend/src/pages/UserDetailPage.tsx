@@ -143,7 +143,7 @@ export const UserDetailPage: React.FC = () => {
                   {/* Quick return button */}
                   <div className="mt-1 flex justify-end">
                     <button
-                      onClick={() => handleReturnItem(item.id, item.name)}
+                      onClick={() => handleReturnItem(item.id, item.product_name)}
                       className="inline-flex items-center gap-1 px-3 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 rounded-lg text-xs font-semibold transition"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />

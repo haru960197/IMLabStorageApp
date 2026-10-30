@@ -62,7 +62,7 @@ export const MainPage: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="備品を検索 (名前、棚、ジャンル、使用者など)"
+              placeholder="備品を検索 (品名、管理番号、棚、ジャンル、使用者など)"
               className="w-full pl-11 pr-4 py-3 bg-white border border-slate-300 rounded-xl shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
             />
             {isSearching && (

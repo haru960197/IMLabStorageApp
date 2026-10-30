@@ -117,14 +117,15 @@ async def export_csv():
     output.write('\ufeff')
     writer = csv.writer(output)
     writer.writerow([
-        "備品ID", "備品名", "保管棚", "ジャンル", "状態",
+        "備品ID", "管理番号", "品名", "保管棚", "ジャンル", "状態",
         "現在の使用者", "最後に使用した人", "最終使用日時", "詳細情報", "画像URL"
     ])
     for item in items:
         status_label = "使用中" if item.status == "in_use" else "貸出可能"
         writer.writerow([
             item.id,
-            item.name,
+            item.label,
+            item.product_name,
             item.shelf_label or "",
             item.category,
             status_label,

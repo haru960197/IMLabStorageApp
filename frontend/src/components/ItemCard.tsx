@@ -23,7 +23,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, showShelf = true }) =>
           {displayImageUrl ? (
             <img
               src={displayImageUrl}
-              alt={item.name}
+              alt={item.product_name}
               className="w-full h-full object-cover group-hover:scale-105 transition duration-200"
               loading="lazy"
             />
@@ -36,7 +36,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, showShelf = true }) =>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-semibold text-slate-900 text-sm sm:text-base group-hover:text-indigo-600 transition truncate">
-              {item.name}
+              {item.product_name}
             </h3>
             {/* Status Badge */}
             <span
@@ -50,8 +50,11 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, showShelf = true }) =>
             </span>
           </div>
 
-          {/* Category & Shelf */}
+          {/* Label, Category & Shelf */}
           <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+            <span className="px-1.5 py-0.5 bg-slate-800 text-white rounded font-mono font-medium">
+              {item.label}
+            </span>
             {showShelf && (
               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-100 text-slate-700 rounded font-medium">
                 <MapPin className="w-3 h-3 text-slate-500" />

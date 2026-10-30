@@ -12,6 +12,10 @@ from app.seed import DEFAULT_SHELVES
 # ユーザー名の比較で大文字小文字を区別しない (一意インデックスと検索の両方で使う)
 USER_NAME_COLLATION = Collation(locale="en", strength=2)
 
+# 備品の管理番号は「ジャンルの先頭3文字-連番」。重複で採番し直す回数の上限
+LABEL_PREFIX_LENGTH = 3
+LABEL_RETRY_LIMIT = 5
+
 
 def get_user_display_name(user: Dict[str, Any]) -> str:
     """画面に出すユーザー名 (名 姓)"""
@@ -46,6 +50,11 @@ class DatabaseManager:
             collation=USER_NAME_COLLATION,          # 大文字小文字は区別しない
         )
         await self.db.shelves.create_index("label", unique=True)
+        await self.db.items.create_index(
+            "label",
+            unique=True,
+            partialFilterExpression={"label": {"$type": "string"}},  # label のない古い備品があっても作れるようにする
+        )
         await self.db.usage_logs.create_index([("item_id", 1), ("timestamp", -1)])
 
     async def _seed_shelves_if_empty(self):
@@ -161,7 +170,7 @@ class DatabaseManager:
             mongo_filter["category"] = category
         if query:
             pattern = {"$regex": re.escape(query), "$options": "i"}
-            mongo_filter["$or"] = [{"name": pattern}, {"description": pattern}, {"category": pattern}]
+            mongo_filter["$or"] = [{"label": pattern}, {"product_name": pattern}, {"description": pattern}, {"category": pattern}]
 
         items = await self.db.items.find(mongo_filter).to_list(None)
         await self._attach_item_states(items)
@@ -199,20 +208,38 @@ class DatabaseManager:
             item["shelf_label"] = shelf_labels.get(item["shelf_id"])
         return items
 
+    async def _next_item_label(self, category: str) -> str:
+        """管理番号を採番する。ジャンルの先頭3文字に、同じ接頭辞の最大番号 + 1 を付ける (削除済みの備品の番号も数える)"""
+        prefix = category[:LABEL_PREFIX_LENGTH].upper()
+        pattern = {"$regex": f"^{re.escape(prefix)}-\\d+$"}
+        docs = await self.db.items.find({"label": pattern}, {"label": 1}).to_list(None)
+        last = max((int(d["label"].rsplit("-", 1)[1]) for d in docs), default=0)
+        return f"{prefix}-{last + 1:03d}"
+
     async def create_item(self, data: Dict[str, Any], user: Dict[str, Any]) -> Dict[str, Any]:
         """備品を登録して、register のログを残す"""
         now = datetime.now(timezone.utc)
+        category = data.get("category") or "その他"
         item = {
-            "name": data["name"],
+            "product_name": data["product_name"],
             "shelf_id": ObjectId(data["shelf_id"]),
-            "category": data.get("category", "その他"),
+            "category": category,
             "description": data.get("description", ""),
             "image_id": ObjectId(data["image_id"]) if data.get("image_id") else None,
             "created_at": now,
             "updated_at": now,
             "deleted_at": None,
         }
-        res = await self.db.items.insert_one(item)
+        # 同時に登録されて番号が重なったら (一意インデックスで弾かれる)、採番し直す
+        for _ in range(LABEL_RETRY_LIMIT):
+            item["label"] = await self._next_item_label(category)
+            try:
+                res = await self.db.items.insert_one(item)
+                break
+            except DuplicateKeyError:
+                item.pop("_id", None)
+        else:
+            raise RuntimeError("管理番号の採番に失敗しました。もう一度登録してください。")
         await self.create_log(res.inserted_id, user["_id"], "register")
         return await self.get_item(str(res.inserted_id))
 
@@ -272,9 +299,9 @@ class DatabaseManager:
         logs = await self.db.usage_logs.find(query).sort([("timestamp", -1), ("_id", -1)]).limit(limit).to_list(None)
 
         # 表示用に、備品名とユーザー名を ID から引いて付ける
-        items = await self.db.items.find({"_id": {"$in": [l["item_id"] for l in logs]}}, {"name": 1}).to_list(None)
+        items = await self.db.items.find({"_id": {"$in": [l["item_id"] for l in logs]}}, {"product_name": 1}).to_list(None)
         users = await self.db.users.find({"_id": {"$in": [l["user_id"] for l in logs]}}).to_list(None)
-        item_names = {i["_id"]: i["name"] for i in items}
+        item_names = {i["_id"]: i["product_name"] for i in items}
         user_names = {u["_id"]: get_user_display_name(u) for u in users}
         for log in logs:
             log["item_name"] = item_names.get(log["item_id"], "不明")

@@ -32,7 +32,8 @@ export interface Shelf {
 
 export interface Item {
   id: string;
-  name: string;
+  label: string;
+  product_name: string;
   shelf_id: string;
   shelf_label?: string | null;
   category: string;
@@ -153,7 +154,7 @@ export const api = {
   },
 
   async createItem(item: {
-    name: string;
+    product_name: string;
     shelf_id: string;
     category?: string;
     description?: string;

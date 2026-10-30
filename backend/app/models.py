@@ -59,7 +59,7 @@ class ShelfResponse(BaseModel):
 ItemStatus = Literal["available", "in_use"]
 
 class ItemBase(BaseModel):
-    name: str = Field(..., min_length=1, description="備品名")
+    product_name: str = Field(..., min_length=1, description="品名")
     shelf_id: str = Field(..., description="保管棚ID (shelves._id)")
     category: Optional[str] = Field(default="その他", description="ジャンル/カテゴリ")
     description: Optional[str] = Field(default="", description="詳細情報")
@@ -69,7 +69,7 @@ class ItemCreate(ItemBase):
     user_id: str = Field(..., description="登録するユーザーのID")
 
 class ItemUpdate(BaseModel):
-    name: Optional[str] = None
+    product_name: Optional[str] = None
     shelf_id: Optional[str] = None
     category: Optional[str] = None
     description: Optional[str] = None
@@ -77,6 +77,7 @@ class ItemUpdate(BaseModel):
 
 class ItemResponse(ItemBase):
     id: PyObjectId = Field(validation_alias=AliasChoices("_id", "id"))
+    label: str  # 管理番号 ("VR-001" など)。登録時に自動採番する
     shelf_id: PyObjectId
     shelf_label: Optional[str] = None
     image_id: OptionalPyObjectId = None

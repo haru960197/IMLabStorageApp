@@ -111,7 +111,7 @@ export const ItemDetailPage: React.FC = () => {
       setActionError('備品を削除するにはログインしてください。');
       return;
     }
-    if (!window.confirm(`備品「${item.name}」を削除してもよろしいですか？`)) {
+    if (!window.confirm(`備品「${item.label} ${item.product_name}」を削除してもよろしいですか？`)) {
       return;
     }
 
@@ -198,7 +198,7 @@ export const ItemDetailPage: React.FC = () => {
               <QRCodeSVG value={itemUrl} size={150} level="M" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-800">{item.name}</p>
+              <p className="text-sm font-bold text-slate-800">{item.label} {item.product_name}</p>
               <p className="text-xs text-slate-400 mt-0.5 break-all">{itemUrl}</p>
             </div>
             <p className="text-xs text-slate-500">
@@ -226,8 +226,9 @@ export const ItemDetailPage: React.FC = () => {
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-start justify-between gap-3">
             <div>
+              <p className="text-xs font-mono font-semibold text-slate-500">管理番号: {item.label}</p>
               <h1 className="text-xl sm:text-2xl font-bold text-slate-900 leading-snug">
-                {item.name}
+                {item.product_name}
               </h1>
               {item.category && (
                 <span className="inline-block mt-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-xs font-semibold rounded">
@@ -253,7 +254,7 @@ export const ItemDetailPage: React.FC = () => {
             {getFullImageUrl(item.image_url) ? (
               <img
                 src={getFullImageUrl(item.image_url)}
-                alt={item.name}
+                alt={item.product_name}
                 className="w-full h-full object-contain"
               />
             ) : (

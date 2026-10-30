@@ -25,7 +25,7 @@ export const ItemCreatePage: React.FC = () => {
   const queryShelfId = searchParams.get('shelf_id') || searchParams.get('shelf') || '';
 
   const [shelves, setShelves] = useState<Shelf[]>([]);
-  const [name, setName] = useState('');
+  const [productName, setProductName] = useState('');
   const [shelfId, setShelfId] = useState(queryShelfId);
   const [category, setCategory] = useState('VR');
   const [description, setDescription] = useState('');
@@ -65,8 +65,8 @@ export const ItemCreatePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) {
-      setErrorMessage('備品名を入力してください。');
+    if (!productName.trim()) {
+      setErrorMessage('品名を入力してください。');
       return;
     }
     if (!currentUser) {
@@ -91,7 +91,7 @@ export const ItemCreatePage: React.FC = () => {
         }
 
         const created = await api.createItem({
-          name: name.trim(),
+          product_name: productName.trim(),
           shelf_id: shelfId,
           category,
           description: description.trim(),
@@ -130,19 +130,20 @@ export const ItemCreatePage: React.FC = () => {
         )}
 
         <form onSubmit={handleSubmit} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          {/* Name */}
+          {/* Product name */}
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-              備品名 <span className="text-rose-500">*</span>
+              品名 <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
               required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
               placeholder="例: Meta Quest 3, RTX 4090"
               className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             />
+            <p className="mt-1 text-xs text-slate-400">管理番号(例: VR-001)は登録時に自動で付きます。</p>
           </div>
 
           {/* Shelf and Category */}

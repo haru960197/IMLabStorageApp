@@ -39,7 +39,8 @@ export const AllItemsPage: React.FC = () => {
     if (search.trim()) {
       const q = search.toLowerCase();
       const match =
-        item.name.toLowerCase().includes(q) ||
+        item.label.toLowerCase().includes(q) ||
+        item.product_name.toLowerCase().includes(q) ||
         item.description.toLowerCase().includes(q) ||
         (item.current_user_name || '').toLowerCase().includes(q) ||
         (item.last_user_name || '').toLowerCase().includes(q) ||
